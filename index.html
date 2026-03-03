@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ordenamiento en Reportes – Sistema de Gestión de Ventas</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  :root {
+    --navy:#1a2744;--blue:#2563eb;--sky:#38bdf8;--mint:#10b981;
+    --amber:#f59e0b;--rose:#f43f5e;--lavender:#818cf8;
+    --bg:#f0f4ff;--card:#fff;--text:#1e293b;--muted:#64748b;--border:#e2e8f0;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+  header{background:var(--navy);padding:2.5rem 2rem 3rem;text-align:center;position:relative;overflow:hidden;}
+  header::before{content:'';position:absolute;top:-60px;left:-60px;width:260px;height:260px;border-radius:50%;background:rgba(37,99,235,.25);}
+  header::after{content:'';position:absolute;bottom:-80px;right:-40px;width:320px;height:320px;border-radius:50%;background:rgba(56,189,248,.15);}
+  .hbadge{display:inline-block;background:var(--sky);color:var(--navy);font-weight:800;font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;padding:.3rem 1rem;border-radius:99px;margin-bottom:1rem;position:relative;z-index:1;}
+  header h1{font-size:clamp(1.5rem,4vw,2.4rem);font-weight:900;color:#fff;line-height:1.2;position:relative;z-index:1;}
+  header h1 span{color:var(--sky);}
+  header p{margin-top:.7rem;color:#94a3b8;font-size:.95rem;position:relative;z-index:1;}
+
+  .student-bar{background:#fff;border-bottom:2px solid var(--border);padding:1rem 2rem;display:flex;gap:1.5rem;flex-wrap:wrap;align-items:flex-end;justify-content:center;}
+  .fg{display:flex;flex-direction:column;gap:.25rem;}
+  .fg label{font-size:.78rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;}
+  .fg input{border:1.5px solid var(--border);border-radius:8px;padding:.4rem .8rem;font-family:'Nunito',sans-serif;font-size:.88rem;color:var(--text);outline:none;transition:border-color .2s;}
+  .fg input:focus{border-color:var(--blue);}
+
+  .prog-wrap{background:#fff;border-bottom:1px solid var(--border);padding:.9rem 2rem;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.06);}
+  .prog-lbl{font-size:.8rem;font-weight:700;color:var(--muted);margin-bottom:.4rem;display:flex;justify-content:space-between;}
+  .prog-bar{height:8px;background:var(--border);border-radius:99px;overflow:hidden;}
+  .prog-fill{height:100%;background:linear-gradient(90deg,var(--blue),var(--sky));border-radius:99px;transition:width .5s ease;width:0%;}
+
+  main{max-width:870px;margin:0 auto;padding:2rem 1.5rem 4rem;}
+
+  .intro-card{background:var(--navy);border-radius:20px;padding:2rem 2.2rem;margin-bottom:2.5rem;color:#fff;position:relative;overflow:hidden;}
+  .intro-card::after{content:'📚';position:absolute;right:1.5rem;top:1.5rem;font-size:3rem;opacity:.12;}
+  .intro-card h2{font-size:1.2rem;font-weight:800;margin-bottom:.8rem;color:var(--sky);}
+  .intro-card p{font-size:.93rem;line-height:1.7;color:#cbd5e1;}
+  .cgrid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1.2rem;}
+  .cbox{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:1rem 1.2rem;}
+  .cbox .tag{display:inline-block;font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;padding:.2rem .7rem;border-radius:99px;margin-bottom:.5rem;}
+  .tp{background:var(--blue);color:#fff;}.ts{background:var(--mint);color:#fff;}
+  .cbox p{font-size:.88rem;color:#e2e8f0;line-height:1.5;}
+  .tnote{background:rgba(245,158,11,.12);border-left:4px solid var(--amber);border-radius:0 10px 10px 0;padding:.8rem 1rem;margin-top:1.2rem;font-size:.88rem;color:#fef3c7;}
+  .tnote strong{color:var(--amber);}
+
+  .db-box{background:#f8faff;border:2px solid #bfdbfe;border-radius:14px;padding:1.2rem 1.5rem;margin-bottom:2rem;}
+  .db-box h3{font-size:.95rem;font-weight:800;color:var(--navy);margin-bottom:.8rem;}
+  .dbt-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:.7rem;}
+  .dbt{background:#fff;border:1.5px solid var(--border);border-radius:10px;padding:.7rem .9rem;}
+  .dbt .tn{font-size:.78rem;font-weight:800;color:var(--blue);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.4rem;}
+  .dbt .tf{font-size:.78rem;color:var(--muted);line-height:1.7;font-family:'Fira Code',monospace;}
+  .dbt .tf span{color:var(--navy);font-weight:600;}
+
+  .sec-title{font-size:1.05rem;font-weight:800;color:var(--navy);margin:2rem 0 1rem;display:flex;align-items:center;gap:.6rem;}
+  .sec-title::after{content:'';flex:1;height:2px;background:var(--border);border-radius:99px;}
+
+  .ecard{background:var(--card);border-radius:18px;border:2px solid var(--border);margin-bottom:1.5rem;overflow:hidden;transition:border-color .2s,box-shadow .2s;}
+  .ecard.completed{border-color:var(--mint);box-shadow:0 0 0 4px rgba(16,185,129,.08);}
+  .ehdr{display:flex;align-items:center;gap:1rem;padding:1.2rem 1.5rem;cursor:pointer;user-select:none;transition:background .15s;}
+  .ehdr:hover{background:#f8faff;}
+  .sbadge{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:1rem;flex-shrink:0;}
+  .completed .sbadge{background:var(--mint)!important;color:#fff!important;}
+  .ehdr h3{flex:1;font-size:.98rem;font-weight:800;color:var(--text);line-height:1.3;}
+  .ehdr .meta{font-size:.78rem;color:var(--muted);font-weight:600;white-space:nowrap;}
+  .chev{width:22px;height:22px;border:2px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.6rem;color:var(--muted);transition:transform .3s,border-color .2s;flex-shrink:0;}
+  .ecard.open .chev{transform:rotate(180deg);border-color:var(--blue);color:var(--blue);}
+  .ebody{display:none;padding:0 1.5rem 1.5rem;border-top:1px solid var(--border);}
+  .ecard.open .ebody{display:block;}
+  .itext{font-size:.92rem;color:var(--muted);margin:1rem 0 1.2rem;line-height:1.65;background:#f8faff;padding:.8rem 1rem;border-radius:10px;border-left:3px solid var(--lavender);}
+
+  .slist{list-style:none;}
+  .si{display:flex;gap:.9rem;margin-bottom:1rem;align-items:flex-start;}
+  .sn{width:26px;height:26px;border-radius:8px;background:var(--blue);color:#fff;font-size:.75rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:.1rem;}
+  .si p{font-size:.92rem;line-height:1.6;color:var(--text);}
+  .si code{font-family:'Fira Code',monospace;background:#f1f5f9;color:var(--blue);padding:.15rem .45rem;border-radius:5px;font-size:.82rem;font-weight:500;}
+  .si strong{color:var(--navy);}
+
+  .callout{border-radius:10px;padding:.8rem 1rem;font-size:.88rem;line-height:1.55;margin:1rem 0;display:flex;gap:.7rem;align-items:flex-start;}
+  .ci{font-size:1.1rem;flex-shrink:0;margin-top:.05rem;}
+  .callout.tip{background:#fffbeb;border-left:3px solid var(--amber);color:#78350f;}
+  .callout.info{background:#eff6ff;border-left:3px solid var(--blue);color:#1e40af;}
+  .callout.ok{background:#f0fdf4;border-left:3px solid var(--mint);color:#14532d;}
+  .callout.warn{background:#fff1f2;border-left:3px solid var(--rose);color:#9f1239;}
+
+  .apath{background:var(--navy);color:#e2e8f0;border-radius:10px;padding:.7rem 1rem;font-family:'Fira Code',monospace;font-size:.82rem;margin:.8rem 0;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;}
+  .apath span{color:var(--sky);}
+  .apath .ar{color:#64748b;}
+
+  .tw{overflow-x:auto;margin:1rem 0;border-radius:10px;border:1px solid var(--border);}
+  table{width:100%;border-collapse:collapse;font-size:.82rem;}
+  thead th{background:var(--navy);color:var(--sky);font-weight:700;padding:.55rem .8rem;text-align:left;white-space:nowrap;}
+  tbody td{padding:.45rem .8rem;border-bottom:1px solid var(--border);color:var(--text);}
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr:hover td{background:#f8faff;}
+  .hly td{background:#fef9c3!important;}
+
+  .vgrid{display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin:1rem 0;}
+  .vcard{background:#f8faff;border:1.5px solid var(--border);border-radius:12px;padding:1rem;}
+  .vcard .vt{font-weight:800;font-size:.85rem;color:var(--navy);margin-bottom:.4rem;}
+  .vcard p{font-size:.82rem;color:var(--muted);line-height:1.5;}
+
+  .cgr{display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin:1rem 0;}
+  .cb{border-radius:10px;padding:.8rem;border:1.5px solid;}
+  .cb .cbt{font-size:.8rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.5rem;}
+  .cb ul{list-style:none;}
+  .cb ul li{font-size:.82rem;line-height:1.5;padding:.15rem 0;}
+  .cb ul li::before{content:'▸ ';}
+
+  .dbtn{display:inline-flex;align-items:center;gap:.5rem;margin-top:1.2rem;padding:.6rem 1.4rem;background:var(--mint);color:#fff;border:none;border-radius:99px;font-family:'Nunito',sans-serif;font-weight:800;font-size:.88rem;cursor:pointer;transition:background .2s,transform .1s;}
+  .dbtn:hover{background:#059669;transform:translateY(-1px);}
+  .dbtn.undone{background:var(--rose);}
+  .dbtn.undone:hover{background:#be123c;}
+
+  .fcard{background:linear-gradient(135deg,var(--navy) 0%,#2d3f6b 100%);border-radius:20px;padding:2.5rem;text-align:center;margin-top:2.5rem;color:#fff;display:none;}
+  .fcard.show{display:block;animation:pop .4s cubic-bezier(.34,1.56,.64,1);}
+  @keyframes pop{from{transform:scale(.9);opacity:0}to{transform:scale(1);opacity:1}}
+  .fcard .trophy{font-size:3.5rem;margin-bottom:.8rem;}
+  .fcard h2{font-size:1.5rem;font-weight:900;margin-bottom:.5rem;}
+  .fcard p{color:#94a3b8;font-size:.95rem;margin-bottom:1.5rem;}
+
+  .pdf-btn{display:inline-flex;align-items:center;gap:.6rem;padding:.85rem 2rem;background:#fff;color:var(--navy);border:none;border-radius:99px;font-family:'Nunito',sans-serif;font-weight:800;font-size:.95rem;cursor:pointer;transition:all .2s;box-shadow:0 4px 14px rgba(0,0,0,.15);}
+  .pdf-btn:hover{background:#f0f9ff;transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.2);}
+  .pdf-btn.dark{background:var(--navy);color:#fff;box-shadow:none;}
+  .pdf-btn.dark:hover{background:#243560;}
+  .pnote{font-size:.78rem;color:#94a3b8;margin-top:.7rem;}
+  .pdf-alt{text-align:center;margin-top:2rem;padding:1.5rem;background:#fff;border-radius:16px;border:2px dashed var(--border);}
+  .pdf-alt p{font-size:.88rem;color:var(--muted);margin-bottom:.8rem;}
+
+  @media(max-width:600px){
+    .cgrid,.vgrid,.cgr,.dbt-grid{grid-template-columns:1fr;}
+    .ehdr{padding:1rem;}.ebody{padding:0 1rem 1rem;}
+    .student-bar{flex-direction:column;align-items:flex-start;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hbadge">Microsoft Access · Reportes</div>
+  <h1>Ordenamiento Primario y<br><span>Secundario en Reportes</span></h1>
+  <p>Sistema de Gestión de Ventas &nbsp;·&nbsp; Guía Paso a Paso</p>
+</header>
+
+<div class="student-bar">
+  <div class="fg"><label for="inp-n">Nombre del estudiante</label><input type="text" id="inp-n" placeholder="Ej: María González" style="width:220px"></div>
+  <div class="fg"><label for="inp-m">Matrícula</label><input type="text" id="inp-m" placeholder="Ej: 2024-001" style="width:140px"></div>
+  <div class="fg"><label for="inp-d">Fecha</label><input type="date" id="inp-d" style="width:150px"></div>
+</div>
+
+<div class="prog-wrap">
+  <div class="prog-lbl"><span>Tu progreso</span><span id="ptxt">0 de 5 ejercicios completados</span></div>
+  <div class="prog-bar"><div class="prog-fill" id="pfill"></div></div>
+</div>
+
+<main>
+
+  <!-- INTRODUCCIÓN -->
+  <div class="intro-card">
+    <h2>📖 Introducción: Ordenamiento Primario y Secundario</h2>
+    <p>Antes de comenzar los ejercicios, la maestra explicará estos conceptos. Léelos con atención y luego los pondrás en práctica con tu base de datos.</p>
+    <div class="cgrid">
+      <div class="cbox">
+        <div class="tag tp">Orden Primario</div>
+        <p>Es el <strong>criterio principal</strong> de organización. Es la primera regla que Access aplica para ordenar todos los registros del reporte.</p>
+      </div>
+      <div class="cbox">
+        <div class="tag ts">Orden Secundario</div>
+        <p>Se aplica <strong>cuando dos registros tienen el mismo valor</strong> en el campo primario. Es el "desempate" entre registros iguales.</p>
+      </div>
+    </div>
+    <div class="tnote">
+      <strong>💡 Ejemplo con tu base de datos:</strong> En el reporte de ventas, el orden primario puede ser la <em>Fecha</em> (más reciente primero). Si hay dos ventas del mismo día, el orden secundario por <em>Apellido del cliente</em> decide cuál aparece primero: Díaz antes que Herrera.
+    </div>
+  </div>
+
+  <!-- BD REFERENCIA -->
+  <div class="db-box">
+    <h3>🗄️ Tu Base de Datos — Tablas y campos que usarás</h3>
+    <div class="dbt-grid">
+      <div class="dbt">
+        <div class="tn">📋 Ventas</div>
+        <div class="tf"><span>ID_Venta</span><br><span>Fecha</span><br><span>ID_Cliente</span><br><span>Total</span><br><span>Metodo_Pago</span></div>
+      </div>
+      <div class="dbt">
+        <div class="tn">👤 Clientes</div>
+        <div class="tf"><span>ID_Cliente</span><br><span>Nombre</span><br><span>Apellido</span><br><span>Email</span><br><span>Telefono</span><br><span>Direccion</span></div>
+      </div>
+      <div class="dbt">
+        <div class="tn">📦 Productos</div>
+        <div class="tf"><span>ID_Producto</span><br><span>Nombre</span><br><span>Precio</span><br><span>Stock</span><br><span>Categoria</span></div>
+      </div>
+      <div class="dbt">
+        <div class="tn">🧾 Detalle_Ventas</div>
+        <div class="tf"><span>ID_Detalle</span><br><span>ID_Venta</span><br><span>ID_Producto</span><br><span>Cantidad</span><br><span>Subtotal</span></div>
+      </div>
+    </div>
+  </div>
+
+  <p class="sec-title">Ejercicios de la Actividad</p>
+
+  <!-- ══ EJERCICIO 1 ══ -->
+  <div class="ecard open" id="ex1">
+    <div class="ehdr" onclick="toggle('ex1')">
+      <div class="sbadge" style="background:#dbeafe;color:#1d4ed8">1</div>
+      <h3>Reporte de Ventas con Ordenamiento Múltiple<br><small style="font-weight:600;color:#64748b">Primario: Fecha (↓ más reciente) · Secundario: Apellido (A→Z)</small></h3>
+      <span class="meta">⏱ ~15 min</span><div class="chev">▼</div>
+    </div>
+    <div class="ebody">
+      <div class="itext">Crearás un reporte usando las tablas <strong>Ventas</strong> y <strong>Clientes</strong>. Los registros se mostrarán desde la venta más reciente hasta la más antigua. Si dos ventas tienen la misma fecha, los clientes aparecerán ordenados alfabéticamente por <strong>Apellido</strong>.</div>
+
+      <ul class="slist">
+        <li class="si"><div class="sn">1</div><p>Abre la base de datos <strong>Sist_Gestión_de_Ventas</strong> en Microsoft Access.</p></li>
+        <li class="si"><div class="sn">2</div><p>Haz clic en la pestaña <strong>Crear</strong> de la barra de herramientas superior y luego en <strong>"Asistente para informes"</strong>.</p></li>
+        <li class="si"><div class="sn">3</div><p>En la lista desplegable <em>"Tablas/Consultas"</em>, selecciona la tabla <code>Ventas</code> y agrega con la flecha <strong>→</strong> los campos: <code>ID_Venta</code>, <code>Fecha</code>, <code>Total</code>, <code>Metodo_Pago</code>.</p></li>
+        <li class="si"><div class="sn">4</div><p>Sin cerrar el asistente, cambia la lista a la tabla <code>Clientes</code> y agrega: <code>Nombre</code> y <code>Apellido</code>. Haz clic en <strong>Siguiente</strong>.</p></li>
+        <li class="si"><div class="sn">5</div><p>Si el asistente pregunta cómo ver los datos, elige <strong>"por Ventas"</strong> y haz clic en <strong>Siguiente</strong> hasta llegar a la pantalla de <strong>ordenamiento</strong>.</p></li>
+      </ul>
+
+      <div class="callout info"><span class="ci">🔢</span><div>En la pantalla de ordenamiento verás <strong>4 filas numeradas</strong>. El nivel <strong>1 = Primario</strong> y el nivel <strong>2 = Secundario</strong>. Los demás déjalos vacíos.</div></div>
+
+      <ul class="slist">
+        <li class="si"><div class="sn">6</div><p><strong>Fila 1 (Primario):</strong> despliega la lista y elige <code>Fecha</code>. Luego haz clic en el botón <strong>"Ascendente"</strong> para cambiarlo a <strong>"Descendente"</strong> (↓ ventas más recientes primero).</p></li>
+        <li class="si"><div class="sn">7</div><p><strong>Fila 2 (Secundario):</strong> elige <code>Apellido</code> y deja la opción en <strong>"Ascendente"</strong> (A → Z).</p></li>
+        <li class="si"><div class="sn">8</div><p>Haz clic en <strong>Siguiente</strong>, elige diseño <em>Tabular</em> y orientación <em>Horizontal</em>. En la última pantalla escribe el nombre <code>Rpt_VentasPorFecha</code> y clic en <strong>Finalizar</strong>.</p></li>
+      </ul>
+
+      <div class="callout ok"><span class="ci">✅</span><div><strong>¿Cómo verifico que está correcto?</strong> La primera venta que debe aparecer es: <strong>27/02/2026 – Díaz, Rafael – RD$ 750.00 – Efectivo</strong>. Si tu reporte comienza así, ¡está correcto!</div></div>
+
+      <p style="font-size:.85rem;font-weight:700;color:var(--navy);margin:.8rem 0 .4rem">Así debe verse el inicio de tu reporte:</p>
+      <div class="tw">
+        <table>
+          <thead><tr><th>ID_Venta</th><th>Fecha</th><th>Apellido</th><th>Nombre</th><th>Total</th><th>Método Pago</th></tr></thead>
+          <tbody>
+            <tr><td>10</td><td>27/02/2026</td><td>Díaz</td><td>Rafael</td><td>RD$ 750.00</td><td>Efectivo</td></tr>
+            <tr><td>9</td><td>25/02/2026</td><td>Herrera</td><td>Miguel</td><td>RD$ 13,550.00</td><td>Tarjeta de Crédito</td></tr>
+            <tr><td>8</td><td>21/02/2026</td><td>Núñez</td><td>Carmen</td><td>RD$ 2,200.00</td><td>Efectivo</td></tr>
+            <tr><td>7</td><td>20/02/2026</td><td>Torres</td><td>José</td><td>RD$ 3,200.00</td><td>Transferencia Bancaria</td></tr>
+            <tr><td>6</td><td>14/02/2026</td><td>Pérez</td><td>Carlos</td><td>RD$ 18,000.00</td><td>Tarjeta de Crédito</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <button class="dbtn" onclick="markDone('ex1',this)">✓ &nbsp;Ejercicio completado</button>
+    </div>
+  </div>
+
+  <!-- ══ EJERCICIO 2 ══ -->
+  <div class="ecard" id="ex2">
+    <div class="ehdr" onclick="toggle('ex2')">
+      <div class="sbadge" style="background:#dcfce7;color:#15803d">2</div>
+      <h3>Tres Variantes del Reporte de Ventas<br><small style="font-weight:600;color:#64748b">Diferentes ordenamientos con los mismos datos</small></h3>
+      <span class="meta">⏱ ~20 min</span><div class="chev">▼</div>
+    </div>
+    <div class="ebody">
+      <div class="itext">Crearás <strong>tres versiones adicionales</strong> del reporte. La manera más rápida es copiar el reporte del Ejercicio 1 y cambiar solo el ordenamiento en Vista Diseño.</div>
+
+      <div class="callout tip"><span class="ci">💡</span><div><strong>Cómo copiar un reporte:</strong> En el Panel de Navegación, haz clic derecho sobre <code>Rpt_VentasPorFecha</code> → <em>Copiar</em> → clic derecho en espacio vacío del panel → <em>Pegar</em> → escribe el nuevo nombre.</div></div>
+      <div class="callout info"><span class="ci">🔧</span><div><strong>Cómo cambiar el ordenamiento:</strong> Abre el reporte copiado en <strong>Vista Diseño</strong> → en la parte inferior, abre el panel <strong>"Agrupar, ordenar y total"</strong> → modifica los campos y la dirección.</div></div>
+
+      <div class="apath"><span>Clic derecho en el reporte</span><span class="ar">→</span><span>Vista Diseño</span><span class="ar">→</span><span>Panel inferior: Agrupar, ordenar y total</span></div>
+
+      <p style="font-size:.88rem;font-weight:700;color:var(--navy);margin:1.2rem 0 .8rem">Crea estas 3 variantes (usa exactamente estos nombres):</p>
+      <div class="vgrid">
+        <div class="vcard">
+          <div class="vt">📋 Variante A — <code style="font-size:.78rem">Rpt_VentasPorCliente</code></div>
+          <p><strong>Primario:</strong> <code>Apellido</code> → Ascendente (A→Z)<br><strong>Secundario:</strong> <code>Fecha</code> → Descendente (más reciente primero)</p>
+        </div>
+        <div class="vcard">
+          <div class="vt">📋 Variante B — <code style="font-size:.78rem">Rpt_VentasPorTotal</code></div>
+          <p><strong>Primario:</strong> <code>Total</code> → Descendente (mayor a menor)<br><strong>Secundario:</strong> ninguno (déjalo vacío)</p>
+        </div>
+        <div class="vcard">
+          <div class="vt">📋 Variante C — <code style="font-size:.78rem">Rpt_VentasPorMetodoPago</code></div>
+          <p><strong>Primario:</strong> <code>Metodo_Pago</code> → Ascendente (A→Z)<br><strong>Secundario:</strong> <code>Fecha</code> → Descendente</p>
+        </div>
+        <div class="vcard" style="border-style:dashed;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:.4rem">
+          <div style="font-size:1.5rem">💾</div>
+          <p style="text-align:center">Usa <kbd>Ctrl+S</kbd> para guardar cada variante después de modificar el ordenamiento.</p>
+        </div>
+      </div>
+
+      <div class="callout ok"><span class="ci">✅</span><div>Al terminar debes tener <strong>4 reportes</strong> en tu Panel de Navegación: <code>Rpt_VentasPorFecha</code>, <code>Rpt_VentasPorCliente</code>, <code>Rpt_VentasPorTotal</code> y <code>Rpt_VentasPorMetodoPago</code>.</div></div>
+
+      <p style="font-size:.85rem;font-weight:700;color:var(--navy);margin:.8rem 0 .4rem">Ejemplo: así debe empezar <code>Rpt_VentasPorTotal</code>:</p>
+      <div class="tw">
+        <table>
+          <thead><tr><th>Fecha</th><th>Apellido</th><th>Nombre</th><th>Total</th><th>Método Pago</th></tr></thead>
+          <tbody>
+            <tr><td>15/01/2026</td><td>González</td><td>María</td><td>RD$ 29,350.00</td><td>Tarjeta de Crédito</td></tr>
+            <tr><td>14/02/2026</td><td>Pérez</td><td>Carlos</td><td>RD$ 18,000.00</td><td>Tarjeta de Crédito</td></tr>
+            <tr><td>25/01/2026</td><td>Sánchez</td><td>Luisa</td><td>RD$ 15,200.00</td><td>Transferencia Bancaria</td></tr>
+            <tr><td>25/02/2026</td><td>Herrera</td><td>Miguel</td><td>RD$ 13,550.00</td><td>Tarjeta de Crédito</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <button class="dbtn" onclick="markDone('ex2',this)">✓ &nbsp;Ejercicio completado</button>
+    </div>
+  </div>
+
+  <!-- ══ EJERCICIO 3 ══ -->
+  <div class="ecard" id="ex3">
+    <div class="ehdr" onclick="toggle('ex3')">
+      <div class="sbadge" style="background:#fef3c7;color:#b45309">3</div>
+      <h3>Formato Visual para Distinguir Grupos<br><small style="font-weight:600;color:#64748b">Líneas divisorias, colores y espaciado</small></h3>
+      <span class="meta">⏱ ~15 min</span><div class="chev">▼</div>
+    </div>
+    <div class="ebody">
+      <div class="itext">Un reporte bien ordenado también debe ser visualmente claro. Trabajarás sobre <code>Rpt_VentasPorCliente</code> para agregar formato que ayude a distinguir cuándo cambia el grupo de cliente.</div>
+
+      <ul class="slist">
+        <li class="si"><div class="sn">1</div><p>Abre <code>Rpt_VentasPorCliente</code> con clic derecho → <strong>Vista Diseño</strong>.</p></li>
+        <li class="si"><div class="sn">2</div>
+          <p><strong>Línea divisoria entre clientes:</strong> En el panel inferior <em>"Agrupar, ordenar y total"</em>, haz clic en el grupo <code>Apellido</code> → clic en <strong>"Más"</strong> → activa la opción <strong>"con una sección de pie"</strong>.<br>
+          En la nueva sección <em>Pie del grupo Apellido</em>, ve a <em>Diseño → Controles → Línea</em> y dibuja una línea horizontal. Luego en sus propiedades (<kbd>F4</kbd>) ajusta: <strong>Color de borde</strong> = gris oscuro, <strong>Ancho de borde</strong> = 2 pt.</p>
+        </li>
+        <li class="si"><div class="sn">3</div>
+          <p><strong>Resaltado del campo Fecha:</strong> En la sección <em>Detalle</em>, haz clic sobre el cuadro de texto del campo <code>Fecha</code>. Presiona <kbd>F4</kbd> para abrir propiedades. En <strong>"Color de fondo"</strong> escribe <code>#FFF9C4</code> (amarillo suave).</p>
+        </li>
+        <li class="si"><div class="sn">4</div>
+          <p><strong>Espaciado entre grupos:</strong> Haz clic en la barra gris que dice <em>"Encabezado Apellido"</em>. Arrastra su borde inferior hacia abajo unos 0.5 cm para crear un espacio visual al inicio de cada nuevo grupo de cliente.</p>
+        </li>
+        <li class="si"><div class="sn">5</div><p>Guarda los cambios con <kbd>Ctrl+S</kbd> y verifica el resultado con clic derecho → <strong>Vista Preliminar</strong>.</p></li>
+      </ul>
+
+      <div class="callout tip"><span class="ci">💡</span><div><strong>¿No ves el panel "Agrupar, ordenar y total"?</strong> Ve a la pestaña <em>Diseño</em> en la barra superior y haz clic en el botón <strong>"Agrupar y ordenar"</strong>. Aparecerá en la parte inferior de la pantalla.</div></div>
+      <div class="callout ok"><span class="ci">✅</span><div>El resultado debe mostrar: cada grupo de apellido con espacio en su encabezado, las fechas con fondo amarillo claro, y una línea gris al pie de cada grupo antes de pasar al siguiente cliente.</div></div>
+
+      <button class="dbtn" onclick="markDone('ex3',this)">✓ &nbsp;Ejercicio completado</button>
+    </div>
+  </div>
+
+  <!-- ══ EJERCICIO 4 ══ -->
+  <div class="ecard" id="ex4">
+    <div class="ehdr" onclick="toggle('ex4')">
+      <div class="sbadge" style="background:#fce7f3;color:#9d174d">4</div>
+      <h3>Encabezados de Grupo Dinámicos<br><small style="font-weight:600;color:#64748b">Mostrar nombre del cliente y método de pago en cada grupo</small></h3>
+      <span class="meta">⏱ ~15 min</span><div class="chev">▼</div>
+    </div>
+    <div class="ebody">
+      <div class="itext">Los <strong>encabezados de grupo</strong> muestran automáticamente el valor del campo agrupado (el apellido del cliente, por ejemplo). Así el lector sabe en todo momento qué grupo está viendo sin necesidad de buscar el dato en cada fila.</div>
+
+      <p style="font-size:.88rem;font-weight:700;color:var(--navy);margin:.5rem 0 .8rem">Parte A — Encabezado con Apellido y Nombre del cliente</p>
+      <ul class="slist">
+        <li class="si"><div class="sn">1</div><p>Con <code>Rpt_VentasPorCliente</code> abierto en Vista Diseño, verifica que la sección <em>"Encabezado Apellido"</em> esté visible (si no, actívala desde el panel de agrupamiento como en el ejercicio anterior).</p></li>
+        <li class="si"><div class="sn">2</div><p>En la pestaña <em>Diseño → Controles</em>, haz clic en <strong>Cuadro de texto</strong> y dibújalo dentro de la sección <em>Encabezado Apellido</em>.</p></li>
+        <li class="si"><div class="sn">3</div>
+          <p>Haz clic derecho sobre el cuadro → <strong>Propiedades</strong> (<kbd>F4</kbd>) → busca <strong>"Origen del control"</strong> y escribe:<br>
+          <code>=[Apellido] & ", " & [Nombre]</code><br>
+          Esto mostrará: <em>Díaz, Rafael</em> · <em>González, María</em> · etc.</p>
+        </li>
+        <li class="si"><div class="sn">4</div><p>Dale estilo: fuente en <strong>Negrita</strong>, tamaño <strong>14</strong>, color <strong>azul oscuro</strong>. Elimina la etiqueta automática que se crea junto al cuadro (la que dice "Texto0" o similar).</p></li>
+      </ul>
+
+      <div class="callout info"><span class="ci">💡</span><div>El símbolo <code>&</code> en Access une textos. <code>", "</code> agrega la coma y el espacio entre el apellido y el nombre.</div></div>
+
+      <p style="font-size:.88rem;font-weight:700;color:var(--navy);margin:1rem 0 .8rem">Parte B — Encabezado con Método de Pago (<code>Rpt_VentasPorMetodoPago</code>)</p>
+      <ul class="slist">
+        <li class="si"><div class="sn">5</div><p>Abre <code>Rpt_VentasPorMetodoPago</code> en Vista Diseño. Activa la sección de encabezado del grupo <code>Metodo_Pago</code> desde el panel de agrupamiento.</p></li>
+        <li class="si"><div class="sn">6</div><p>Agrega un cuadro de texto con origen del control: <code>=[Metodo_Pago]</code></p></li>
+        <li class="si"><div class="sn">7</div><p>Agrega una etiqueta (Label) al lado izquierdo que diga <strong>"Método de Pago:"</strong>. Dale color verde oscuro al título del grupo. Guarda con <kbd>Ctrl+S</kbd>.</p></li>
+      </ul>
+
+      <div class="callout ok"><span class="ci">✅</span><div>En <code>Rpt_VentasPorCliente</code> cada grupo debe mostrar el nombre como <em>"Díaz, Rafael"</em> en negrita. En <code>Rpt_VentasPorMetodoPago</code> cada grupo debe iniciar con el método (Efectivo · Tarjeta de Crédito · Tarjeta de Débito · Transferencia Bancaria).</div></div>
+
+      <button class="dbtn" onclick="markDone('ex4',this)">✓ &nbsp;Ejercicio completado</button>
+    </div>
+  </div>
+
+  <!-- ══ EJERCICIO 5 ══ -->
+  <div class="ecard" id="ex5">
+    <div class="ehdr" onclick="toggle('ex5')">
+      <div class="sbadge" style="background:#ede9fe;color:#6d28d9">5</div>
+      <h3>Comparación Visual de los 4 Reportes<br><small style="font-weight:600;color:#64748b">¿Cómo cambia la información según el ordenamiento?</small></h3>
+      <span class="meta">⏱ ~10 min</span><div class="chev">▼</div>
+    </div>
+    <div class="ebody">
+      <div class="itext">Este es el ejercicio final. Abrirás tus 4 reportes en Vista Preliminar y compararás cómo la misma información se presenta diferente. Responde las preguntas en tu cuaderno.</div>
+
+      <ul class="slist">
+        <li class="si"><div class="sn">1</div><p>Abre <code>Rpt_VentasPorFecha</code>. ¿Qué venta aparece primera? (<em>Respuesta esperada: Rafael Díaz, 27/02/2026</em>). ¿Cuál aparece de última?</p></li>
+        <li class="si"><div class="sn">2</div><p>Abre <code>Rpt_VentasPorCliente</code>. ¿Cuál es el primer grupo de apellido? (<em>Respuesta esperada: Díaz</em>). ¿Tiene más de una venta? ¿En qué orden aparecen sus fechas?</p></li>
+        <li class="si"><div class="sn">3</div><p>Abre <code>Rpt_VentasPorTotal</code>. ¿Cuál es la venta de mayor valor? (<em>Respuesta esperada: González, María – RD$ 29,350.00</em>). ¿Cuál es la de menor valor?</p></li>
+        <li class="si"><div class="sn">4</div><p>Abre <code>Rpt_VentasPorMetodoPago</code>. ¿Cuántos grupos distintos de método de pago hay? (<em>Respuesta esperada: 4</em>). ¿Cuál método tiene más ventas?</p></li>
+      </ul>
+
+      <div class="cgr">
+        <div class="cb" style="border-color:#bfdbfe;background:#eff6ff">
+          <div class="cbt" style="color:#1d4ed8">🗓 Por Fecha</div>
+          <ul><li>¿Cuál es la venta más reciente?</li><li>¿Y la más antigua?</li><li>¿Para quién sería útil verlo así?</li></ul>
+        </div>
+        <div class="cb" style="border-color:#bbf7d0;background:#f0fdf4">
+          <div class="cbt" style="color:#15803d">👤 Por Cliente</div>
+          <ul><li>¿Quién compra más seguido?</li><li>¿Puedes ver el historial completo?</li><li>¿Para qué departamento sirve?</li></ul>
+        </div>
+        <div class="cb" style="border-color:#fde68a;background:#fffbeb">
+          <div class="cbt" style="color:#b45309">💰 Por Total</div>
+          <ul><li>¿Quién realizó la compra mayor?</li><li>¿Y la más pequeña?</li><li>¿Qué área empresarial lo usaría?</li></ul>
+        </div>
+        <div class="cb" style="border-color:#ddd6fe;background:#f5f3ff">
+          <div class="cbt" style="color:#6d28d9">💳 Por Método de Pago</div>
+          <ul><li>¿Cuántos métodos distintos hay?</li><li>¿Cuál se usa más?</li><li>¿Para qué área de la empresa sirve?</li></ul>
+        </div>
+      </div>
+
+      <div class="callout info"><span class="ci">🧠</span><div><strong>Reflexión clave:</strong> El ordenamiento no cambia los datos, solo cambia <em>la perspectiva</em>. La misma información puede contar historias diferentes: ventas recientes para el gerente, historial por cliente para el vendedor, mayores totales para contabilidad, métodos de pago para finanzas.</div></div>
+      <div class="callout warn"><span class="ci">📝</span><div><strong>Entrega:</strong> Muestra tus 4 reportes en pantalla o impresos junto con tus respuestas escritas. Genera el PDF de esta guía con el botón que aparece a continuación.</div></div>
+
+      <button class="dbtn" onclick="markDone('ex5',this)">✓ &nbsp;Ejercicio completado</button>
+    </div>
+  </div>
+
+  <!-- BOTÓN PDF DISPONIBLE SIEMPRE -->
+  <div class="pdf-alt" id="pdfalt">
+    <p>¿Terminaste todos los ejercicios en Access? Genera tu evidencia para entregar:</p>
+    <button class="pdf-btn dark" onclick="generarPDF()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 18 15 15"/></svg>
+      Generar PDF de Evidencia
+    </button>
+    <p style="font-size:.75rem;color:#94a3b8;margin-top:.5rem">Asegúrate de escribir tu nombre y matrícula arriba antes de generar el PDF.</p>
+  </div>
+
+  <!-- CARD FINAL -->
+  <div class="fcard" id="fcard">
+    <div class="trophy">🏆</div>
+    <h2>¡Actividad Completada!</h2>
+    <p>Terminaste todos los ejercicios de ordenamiento en reportes de Access.<br>Descarga tu PDF de evidencia para entregárselo a tu maestra.</p>
+    <button class="pdf-btn" onclick="generarPDF()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 18 15 15"/></svg>
+      Descargar PDF de Evidencia
+    </button>
+    <p class="pnote">El PDF incluye tu nombre, matrícula, fecha y el estado de cada ejercicio.</p>
+  </div>
+
+</main>
+
+<script>
+  const TOTAL = 5;
+  const done = new Set();
+  document.getElementById('inp-d').valueAsDate = new Date();
+
+  function toggle(id) { document.getElementById(id).classList.toggle('open'); }
+
+  function markDone(id, btn) {
+    const card = document.getElementById(id);
+    if (done.has(id)) {
+      done.delete(id);
+      card.classList.remove('completed');
+      btn.classList.remove('undone');
+      btn.innerHTML = '✓ &nbsp;Ejercicio completado';
+    } else {
+      done.add(id);
+      card.classList.add('completed');
+      btn.classList.add('undone');
+      btn.innerHTML = '↩ &nbsp;Marcar como pendiente';
+      // auto-open next
+      const ids = ['ex1','ex2','ex3','ex4','ex5'];
+      const next = ids[ids.indexOf(id)+1];
+      if (next && !document.getElementById(next).classList.contains('open'))
+        toggle(next);
+    }
+    updateProg();
+  }
+
+  function updateProg() {
+    const n = done.size, pct = (n/TOTAL)*100;
+    document.getElementById('pfill').style.width = pct+'%';
+    document.getElementById('ptxt').textContent = `${n} de ${TOTAL} ejercicios completados`;
+    const fc = document.getElementById('fcard');
+    const pa = document.getElementById('pdfalt');
+    if (n === TOTAL) { fc.classList.add('show'); pa.style.display='none'; }
+    else { fc.classList.remove('show'); pa.style.display='block'; }
+  }
+
+  function generarPDF() {
+    if (!window.jspdf) { alert('Cargando PDF... intenta de nuevo en un momento.'); return; }
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
+    const nombre = document.getElementById('inp-n').value.trim() || 'No especificado';
+    const matric = document.getElementById('inp-m').value.trim() || 'No especificado';
+    const fv = document.getElementById('inp-d').value;
+    const fstr = fv ? new Date(fv+'T12:00:00').toLocaleDateString('es-DO',{day:'2-digit',month:'long',year:'numeric'})
+                    : new Date().toLocaleDateString('es-DO',{day:'2-digit',month:'long',year:'numeric'});
+    const W=210, M=18; let y=0;
+
+    // Header
+    doc.setFillColor(26,39,68); doc.rect(0,0,W,44,'F');
+    doc.setFillColor(56,189,248); doc.roundedRect(M,9,82,7,2,2,'F');
+    doc.setFontSize(7); doc.setTextColor(26,39,68); doc.setFont('helvetica','bold');
+    doc.text('MICROSOFT ACCESS · REPORTES', M+4, 14);
+    doc.setFontSize(15); doc.setTextColor(255,255,255);
+    doc.text('Ordenamiento Primario y Secundario', M, 25);
+    doc.setFontSize(9); doc.setFont('helvetica','normal'); doc.setTextColor(148,163,184);
+    doc.text('Sistema de Gestión de Ventas — Evidencia de Actividad', M, 32.5);
+    doc.setFontSize(8); doc.setTextColor(56,189,248);
+    doc.text('Centro Educativo Nuestra Señora de la Altagracia · Politécnico NSA', M, 39.5);
+    y=54;
+
+    // Student info box
+    doc.setFillColor(240,244,255); doc.roundedRect(M,y,W-M*2,28,3,3,'F');
+    doc.setDrawColor(191,219,254); doc.setLineWidth(0.5); doc.roundedRect(M,y,W-M*2,28,3,3,'S');
+    doc.setFontSize(7.5); doc.setTextColor(100,116,139); doc.setFont('helvetica','bold');
+    doc.text('DATOS DEL ESTUDIANTE', M+4, y+7);
+    doc.setFontSize(11); doc.setTextColor(30,41,59); doc.setFont('helvetica','bold');
+    doc.text(nombre, M+4, y+16);
+    doc.setFontSize(9); doc.setFont('helvetica','normal'); doc.setTextColor(100,116,139);
+    doc.text('Matrícula: '+matric, M+4, y+23);
+    doc.text('Fecha: '+fstr, W-M-4, y+23, {align:'right'});
+    y+=36;
+
+    // Section label
+    doc.setFontSize(8); doc.setFont('helvetica','bold'); doc.setTextColor(100,116,139);
+    doc.text('EJERCICIOS REALIZADOS', M, y); y+=7;
+
+    const exs = [
+      {id:'ex1',n:1,title:'Reporte de Ventas con Ordenamiento Múltiple',sub:'Primario: Fecha (↓) · Secundario: Apellido (A→Z)',bg:[219,234,254],tc:[29,78,216]},
+      {id:'ex2',n:2,title:'Tres Variantes del Reporte de Ventas',sub:'Rpt_VentasPorCliente · Rpt_VentasPorTotal · Rpt_VentasPorMetodoPago',bg:[220,252,231],tc:[21,128,61]},
+      {id:'ex3',n:3,title:'Formato Visual para Distinguir Grupos',sub:'Líneas divisorias · Fechas resaltadas · Espaciado entre grupos',bg:[254,243,199],tc:[180,83,9]},
+      {id:'ex4',n:4,title:'Encabezados de Grupo Dinámicos',sub:'=[Apellido] & ", " & [Nombre] · =[Metodo_Pago]',bg:[252,231,243],tc:[157,23,77]},
+      {id:'ex5',n:5,title:'Comparación Visual de los 4 Reportes',sub:'Análisis: Por Fecha · Por Cliente · Por Total · Por Método de Pago',bg:[237,233,254],tc:[109,40,217]},
+    ];
+
+    exs.forEach(e => {
+      const ok = done.has(e.id);
+      doc.setFillColor(ok?240:248, ok?253:250, ok?244:255);
+      doc.roundedRect(M,y,W-M*2,19,2.5,2.5,'F');
+      doc.setFillColor(...(ok?[16,185,129]:[203,213,225]));
+      doc.roundedRect(M,y,3,19,1,1,'F');
+      doc.setFillColor(...e.bg); doc.roundedRect(M+6,y+5,9,9,1.5,1.5,'F');
+      doc.setFontSize(9); doc.setFont('helvetica','bold'); doc.setTextColor(...e.tc);
+      doc.text(String(e.n), M+10.5, y+11, {align:'center'});
+      doc.setFontSize(9.5); doc.setFont('helvetica','bold'); doc.setTextColor(30,41,59);
+      doc.text(e.title, M+18, y+9);
+      doc.setFontSize(7.5); doc.setFont('helvetica','normal'); doc.setTextColor(100,116,139);
+      doc.text(e.sub, M+18, y+15);
+      if (ok) {
+        doc.setFillColor(16,185,129); doc.roundedRect(W-M-28,y+5.5,26,8,4,4,'F');
+        doc.setFontSize(7.5); doc.setFont('helvetica','bold'); doc.setTextColor(255,255,255);
+        doc.text('✓  COMPLETADO', W-M-15, y+11, {align:'center'});
+      } else {
+        doc.setFillColor(241,245,249); doc.roundedRect(W-M-28,y+5.5,26,8,4,4,'F');
+        doc.setFontSize(7.5); doc.setFont('helvetica','normal'); doc.setTextColor(148,163,184);
+        doc.text('Pendiente', W-M-15, y+11, {align:'center'});
+      }
+      y+=22;
+    });
+
+    // Progress summary
+    y+=3;
+    const pct = Math.round((done.size/TOTAL)*100);
+    doc.setFillColor(26,39,68); doc.roundedRect(M,y,W-M*2,22,3,3,'F');
+    doc.setFontSize(10); doc.setFont('helvetica','bold'); doc.setTextColor(255,255,255);
+    doc.text(`Ejercicios completados: ${done.size} de ${TOTAL}   (${pct}%)`, M+5, y+9);
+    doc.setFillColor(51,65,85); doc.roundedRect(M+5,y+13,W-M*2-10,4,2,2,'F');
+    if (done.size>0) { doc.setFillColor(56,189,248); doc.roundedRect(M+5,y+13,(W-M*2-10)*(done.size/TOTAL),4,2,2,'F'); }
+    y+=30;
+
+    // Observations
+    doc.setFontSize(8); doc.setFont('helvetica','bold'); doc.setTextColor(100,116,139);
+    doc.text('OBSERVACIONES / FIRMA DE LA MAESTRA:', M, y); y+=5;
+    doc.setDrawColor(226,232,240); doc.setLineWidth(0.4);
+    for (let i=0;i<4;i++) doc.line(M,y+(i*8),W-M,y+(i*8));
+    y+=38;
+
+    // Signatures
+    doc.line(M,y,M+68,y); doc.line(W-M-68,y,W-M,y);
+    doc.setFontSize(7.5); doc.setFont('helvetica','normal'); doc.setTextColor(100,116,139);
+    doc.text('Firma del estudiante', M, y+5);
+    doc.text('Firma de la maestra', W-M-68, y+5);
+
+    // Footer
+    doc.setFillColor(26,39,68); doc.rect(0,285,W,12,'F');
+    doc.setFontSize(7); doc.setTextColor(148,163,184); doc.setFont('helvetica','normal');
+    doc.text('Análisis y Diseño de Reportes · Politécnico NSA', M, 292);
+    doc.text('Generado: '+new Date().toLocaleDateString('es-DO'), W-M, 292, {align:'right'});
+
+    const safe = nombre.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g,'').trim().replace(/\s+/g,'_')||'Estudiante';
+    doc.save(`Evidencia_Ordenamiento_Access_${safe}.pdf`);
+  }
+</script>
+</body>
+</html>
